@@ -17,7 +17,7 @@ class PostRepositoryImpl(
             return cachedPosts.map { it.toDomain() }
         }
         val networkPosts = api.getPosts()
-        val entities = networkPosts.map { it.toEntity() }
+        val entities = networkPosts.map { it.toEntity(System.currentTimeMillis()) }
         dao.insertPosts(entities)
         return entities.map { it.toDomain() }
     }

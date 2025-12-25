@@ -10,6 +10,16 @@ android {
         version = release(36)
     }
 
+    packaging {resources {
+        // This rule tells Gradle to ignore the duplicate LICENSE.md files
+        excludes += "/META-INF/LICENSE.md"
+
+        // Sometimes duplicate AL2.0 files cause issues too,
+        // so it's good practice to exclude them as well if they pop up:
+        excludes += "/META-INF/LICENSE-notice.md"
+    }
+    }
+
     defaultConfig {
         applicationId = "com.demo.cleanarchitecturedemo"
         minSdk = 26
@@ -68,7 +78,9 @@ dependencies {
 
 
 
-
+    testImplementation(libs.okhttp.mockwebserver)
+    androidTestImplementation(libs.okhttp.mockwebserver)
+    androidTestImplementation(libs.androidx.espresso.contrib)
     // Unit Tests (Local)
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
