@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1076252128462",
+    "project_id": "prototype-ece8d",
+    "storage_bucket": "prototype-ece8d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1076252128462:android:34eb530a4a7b18ab834c9f",
+        "android_client_info": {
+          "package_name": "com.demo.cleanarchitecturedemo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCs-gBLOMJhPRZFOrhDTbLkFMx2ay2YEak"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1076252128462:android:245aa1c9875b53d8834c9f",
+        "android_client_info": {
+          "package_name": "com.rwbuild.a912prototype"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCs-gBLOMJhPRZFOrhDTbLkFMx2ay2YEak"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

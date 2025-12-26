@@ -1,0 +1,91 @@
+name: My Android CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # -----------------------------------------------------------------
+  # JOB 1: Unit Tests & Build
+  # Runs on every push to verify local logic and compilation
+  # -----------------------------------------------------------------
+  build-and-unit-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # 1. Run Unit Tests (Fast)
+      - name: Run Unit Tests
+        run: ./gradlew testDebugUnitTest
+
+      # 2. Build the Debug APK (Required for Test Lab)
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
+
+      # 3. Build the Android Test APK (The APK containing EndToEndTest.kt)
+      - name: Build Android Test APK
+        run: ./gradlew assembleDebugAndroidTest
+
+      # 4. Upload APKs as artifacts so Job 2 can use them
+      - name: Upload APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-apks
+          path: app/build/outputs/apk/**/*.apk
+
+  # -----------------------------------------------------------------
+  # JOB 2: Firebase Test Lab (Instrumentation Tests)
+  # Runs your EndToEndTest.kt on Google's physical devices
+  # -----------------------------------------------------------------
+  firebase-test-lab:
+    needs: build-and-unit-test # Wait for Job 1 to finish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 1. Download the APKs built in Job 1
+      - name: Download APKs
+        uses: actions/download-artifact@v4
+        with:
+          name: app-apks
+          path: apk-downloads
+
+      # 2. Authenticate with Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCLOUD_SERVICE_KEY }}'
+
+      # 3. Set up Google Cloud SDK
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      # 4. Run Tests on Firebase Test Lab
+      # We use a Pixel 5 running API Level 30 as an example
+      - name: Run Instrumentation Tests in Firebase Test Lab
+        run: |
+          gcloud firebase test android run \
+            --type instrumentation \
+            --app apk-downloads/debug/app-debug.apk \
+            --test apk-downloads/androidTest/debug/app-debug-androidTest.apk \
+            --device model=Pixel2,version=30,locale=en,orientation=portrait \
+            --use-orchestrator \
+            --environment-variables clearPackageData=true \
+            --project ${{ secrets.FIREBASE_PROJECT_ID }}
+
