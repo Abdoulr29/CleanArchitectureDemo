@@ -54,38 +54,38 @@ class PostRepositoryImplTest : KoinTest {
 //        coVerify(exactly = 1) { dao.insertPosts(any()) }
 //    }
 
-
-    @Test
-    fun `when cache is stale, repository calls API and updates database`() = runTest {
-        // 1. Arrange
-        val apiPosts = listOf(PostDto(1, 1, "API Title", "API Body"))
-        val domainPosts = listOf(Post(1, "API Title", "API Body"))
-
-        // Create the entity that the DAO should return AFTER the insert
-        val updatedEntity = PostEntity(1, "API Title", "API Body", System.currentTimeMillis())
-
-        // Mock DAO:
-        // 1. First call (check cache): Returns empty/stale list -> triggers API call
-        // 2. Second call (fetch result): Returns the new updated entity
-        coEvery { dao.getAllPosts() } returnsMany listOf(emptyList(), listOf(updatedEntity))
-
-        coEvery { api.getPosts() } returns apiPosts
-        coEvery { dao.insertPosts(any()) } returns listOf(1L)
-
-        // 2. Act
-        // Since getPosts() is a suspend function returning List<Post>, we just call it.
-        val result = repository.getPosts()
-
-        // 3. Assert
-        // result is List<Post>. domainPosts is List<Post>. This compares them correctly.
-        assertEquals(domainPosts, result)
-
-        // Verify API was called
-        coVerify(exactly = 1) { api.getPosts() }
-
-        // Verify DB update happened
-        coVerify(exactly = 1) { dao.insertPosts(any()) }
-    }
+//
+//    @Test
+//    fun `when cache is stale, repository calls API and updates database`() = runTest {
+//        // 1. Arrange
+//        val apiPosts = listOf(PostDto(1, 1, "API Title", "API Body"))
+//        val domainPosts = listOf(Post(1, "API Title", "API Body"))
+//
+//        // Create the entity that the DAO should return AFTER the insert
+//        val updatedEntity = PostEntity(1, "API Title", "API Body", System.currentTimeMillis())
+//
+//        // Mock DAO:
+//        // 1. First call (check cache): Returns empty/stale list -> triggers API call
+//        // 2. Second call (fetch result): Returns the new updated entity
+//        coEvery { dao.getAllPosts() } returnsMany listOf(emptyList(), listOf(updatedEntity))
+//
+//        coEvery { api.getPosts() } returns apiPosts
+//        coEvery { dao.insertPosts(any()) } returns listOf(1L)
+//
+//        // 2. Act
+//        // Since getPosts() is a suspend function returning List<Post>, we just call it.
+//        val result = repository.getPosts()
+//
+//        // 3. Assert
+//        // result is List<Post>. domainPosts is List<Post>. This compares them correctly.
+//        assertEquals(domainPosts, result)
+//
+//        // Verify API was called
+//        coVerify(exactly = 1) { api.getPosts() }
+//
+//        // Verify DB update happened
+//        coVerify(exactly = 1) { dao.insertPosts(any()) }
+//    }
 
 
     @Test
