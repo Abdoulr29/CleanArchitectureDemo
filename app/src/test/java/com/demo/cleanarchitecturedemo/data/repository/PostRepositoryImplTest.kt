@@ -38,7 +38,7 @@ class PostRepositoryImplTest : KoinTest {
         coVerify(exactly = 0) { api.getPosts() }
     }
 
-//    @Test
+    //    @Test
 //    fun `when cache is stale, repository calls API and updates database`() = runTest {
 //        val staleTimestamp = System.currentTimeMillis() - (10 * 60 * 1000L) // 10 mins ago
 //        val staleData = listOf(PostEntity(1, "Old", "Old", staleTimestamp))
@@ -53,25 +53,26 @@ class PostRepositoryImplTest : KoinTest {
 //        coVerify(exactly = 1) { dao.clearPosts() }
 //        coVerify(exactly = 1) { dao.insertPosts(any()) }
 //    }
-
     @Test
     fun `when cache is stale, repository calls API and updates database`() = runTest {
         // 1. Arrange
         val apiPosts = listOf(PostDto(1, 1, "API Title", "API Body"))
         val domainPosts = listOf(Post(1, "API Title", "API Body"))
 
-        // Simulate STALE/Empty cache to trigger network call
-        coEvery { dao.getAllPosts() } returns emptyList()
+        // Create the entity that the DAO should return AFTER the insert
+        val updatedEntity = PostEntity(1, "API Title", "API Body", System.currentTimeMillis())
+
+        // FIX 1: Mock DAO to return Empty first, then Updated Data second
+        coEvery { dao.getAllPosts() } returnsMany listOf(emptyList(), listOf(updatedEntity))
+
         coEvery { api.getPosts() } returns apiPosts
-        // Mock the insert. employing `just Runs` is often cleaner for Unit returning functions
         coEvery { dao.insertPosts(any()) } returns listOf(1L)
+
         // 2. Act
-        // repository.getPosts() returns Flow<List<Post>>
-        // .first() returns the first emission: List<Post>
-        val resultList = repository.getPosts().first()
+        // FIX 2: Skip the first emission (empty cache) and grab the second emission (updated data)
+        val resultList = repository.getPosts().drop(1).first()
 
         // 3. Assert
-        // We compare the List<Post> we got with the expected List<Post>
         assertEquals(domainPosts, resultList)
 
         // Verify API was called
@@ -80,7 +81,6 @@ class PostRepositoryImplTest : KoinTest {
         // Verify DB update happened
         coVerify(exactly = 1) { dao.insertPosts(any()) }
     }
-
 
 
     @Test
